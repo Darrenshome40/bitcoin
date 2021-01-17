@@ -18,6 +18,44 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+static void MineGenesis(CBlockHeader &genesisBlock, const uint256 &powLimit, bool noProduction) {
+    if (noProduction) genesisBlock.nTime = std::time(0);
+    genesisBlock.nNonce = 0;
+
+    printf("NOTE: Genesis nTime = %u \n", genesisBlock.nTime);
+    printf("WARN: Genesis nNonce (BLANK!) = %u \n", genesisBlock.nNonce);
+
+    arith_uint256 besthash;
+    memset(&besthash, 0xFF, 32);
+    arith_uint256 hashTarget = UintToArith256(powLimit);
+    printf("Target: %s\n", hashTarget.GetHex().c_str());
+    arith_uint256 newhash = UintToArith256(genesisBlock.GetHash());
+    while (newhash > hashTarget) {
+        genesisBlock.nNonce++;
+        if (genesisBlock.nNonce == 0) {
+            printf("NONCE WRAPPED, incrementing time\n");
+            ++genesisBlock.nTime;
+        }
+        // If nothing found after trying for a while, print status
+        if ((genesisBlock.nNonce & 0xffff) == 0)
+            printf("nonce %08X: hash = %s \r",
+                   genesisBlock.nNonce, newhash.ToString().c_str(),
+                   hashTarget.ToString().c_str());
+
+        if (newhash < besthash) {
+            besthash = newhash;
+            printf("New best: %s\n", newhash.GetHex().c_str());
+        }
+        newhash = UintToArith256(genesisBlock.GetHash());
+    }
+    printf("\nGenesis nTime = %u \n", genesisBlock.nTime);
+    printf("Genesis nNonce = %u \n", genesisBlock.nNonce);
+    printf("Genesis nBits: %08x\n", genesisBlock.nBits);
+    printf("Genesis Hash = %s\n", newhash.ToString().c_str());
+    printf("Genesis Hash Merkle Root = %s\n", genesisBlock.hashMerkleRoot.ToString().c_str());
+    printf("Genesis Hash Merkle Root = %s\n", genesisBlock.hashMerkleRoot.ToString().c_str());
+}
+
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     CMutableTransaction txNew;
@@ -217,6 +255,7 @@ public:
         m_assumed_chain_state_size = 2;
 
         genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
+        MineGenesis(genesis, consensus.powLimit, true)
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
