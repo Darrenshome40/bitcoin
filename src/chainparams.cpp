@@ -52,7 +52,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+    const char* pszTimestamp = "Covid 17/01/2021 19 is taking over the planet";
     const CScript genesisOutputScript = CScript() << ParseHex("048e2536557b0733b8b24b72a2ad2e5da370aab5397123213613a9d49cf21b93179e13e4f8a39db102d1cb4c1ae3a468d80bdbe980c96f23b50da5d3c72dba9a45") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
